@@ -1,0 +1,13 @@
+{
+    "name": "oauth",
+    "version": "0.1.0",
+    "description": "",
+    "author": "",
+    "main": "app.js",
+    "dependencies": {
+        "express": "*",
+        "express-session": "*",
+        "passport-oauth2": "*",
+        "request": "*"
+    }
+}
