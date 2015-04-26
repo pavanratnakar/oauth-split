@@ -4,8 +4,7 @@ var qs = require('querystring'),
     session = require("express-session"),
     request = require("request")
     OAuthStrategy = require('passport-oauth').OAuthStrategy,
-    app = express(),
-    aToken = null;
+    app = express();
 
 passport.use(new OAuthStrategy({
         userAuthorizationURL: 'https://secure.splitwise.com/authorize',
@@ -16,15 +15,11 @@ passport.use(new OAuthStrategy({
         requestTokenURL: 'https://secure.splitwise.com/api/v3.0/get_request_token'
     },
     function (accessToken, refreshToken, profile, done) {
-        request.get({url:'https://secure.splitwise.com/api/v3.0/get_expenses?accessToken=' + accessToken}, function optionalCallback(err, httpResponse, body) {
-            if (err) {
-                return console.error('upload failed:', err);
-            }
-            console.log(body);
-        });
-        aToken = accessToken;
         done(null, {
-            username: 'pavan'
+            consumer_key: 'gn7nzMyWMiFdgm0wOQBccEWC82USPanPQwUew2nw',
+            consumer_secret: 'U7I3aFKwLx1MMcBCeircOUWIo7lubdX0qyMKw5IQ',
+            token: accessToken,
+            token_secret: refreshToken
         });
     }
 ));
@@ -48,20 +43,17 @@ app.use(passport.session());
 app.get('/auth', passport.authenticate('oauth'));
 
 app.get('/callback', passport.authenticate('oauth', { failureRedirect: '/failure' }), function(req, res, body) {
-    console.log(body);
     // Successful authentication, redirect home.
-    res.redirect('/success');
+    res.redirect('/report');
 });
 
-app.get('/success', function (req, res, body) {
-    // perm_data = qs.parse(body)
-    // var oauth = {
-    //     consumer_key: 'gn7nzMyWMiFdgm0wOQBccEWC82USPanPQwUew2nw',
-    //     consumer_secret: 'U7I3aFKwLx1MMcBCeircOUWIo7lubdX0qyMKw5IQ',
-    //     token: aToken,
-    //     token_secret: 'U7I3aFKwLx1MMcBCeircOUWIo7lubdX0qyMKw5IQ'
-    // };
-    res.send('Hello World');
+app.get('/report', function (req, res, body) {
+    request.get({url:'https://secure.splitwise.com/api/v3.0/get_expenses', oauth: req.user}, function optionalCallback(err, httpResponse, body) {
+        if (err) {
+            return console.error(err);
+        }
+        res.end(body);
+    });
 });
 
 app.listen(3000);
